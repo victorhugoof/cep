@@ -1,0 +1,75 @@
+server:
+  port: 8585
+  servlet:
+    context-path: /@project.name@
+  error:
+    include-message: always
+    include-stacktrace: never
+spring:
+  profiles:
+    default: local
+  application:
+    name: @project.name@
+    version: @project.version@
+  jackson:
+    default-property-inclusion: NON_NULL
+    serialization:
+      write_dates_as_timestamps: false
+      fail-on-empty-beans: false
+    deserialization:
+      fail-on-ignored-properties: false
+      fail-on-unknown-properties: false
+      accept-single-value-as-array: true
+logging:
+  file:
+    name: logs/@project.name@.log
+  logback:
+    rollingpolicy:
+      max-history: 1024
+      max-file-size: 64MB
+management:
+  endpoint:
+    health:
+      probes:
+        add-additional-paths: off
+        enabled: true
+      show-components: always
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+
+---
+spring:
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/cep
+    username: postgres
+    password: postgres
+  config:
+    activate:
+      on-profile: local
+logging:
+  level:
+    org.springframework: DEBUG
+debug: true
+
+---
+spring:
+  r2dbc:
+    url: jdbc:postgresql://192.168.150.246:5432/cep
+    username: pod1
+    password: pod1
+  config:
+    activate:
+      on-profile: qa
+
+---
+spring:
+  r2dbc:
+    url: jdbc:postgresql://172.30.212.136:5432/cep
+    username: pod1
+    password: pod1
+  config:
+    activate:
+      on-profile: producao
