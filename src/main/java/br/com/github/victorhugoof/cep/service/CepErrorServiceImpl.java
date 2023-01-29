@@ -4,8 +4,6 @@ import br.com.github.victorhugoof.cep.domain.CepErrorEntity;
 import br.com.github.victorhugoof.cep.mapper.CepErrorDTOConverter;
 import br.com.github.victorhugoof.cep.model.CepError;
 import br.com.github.victorhugoof.cep.repository.CepErrorRepository;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -15,14 +13,16 @@ import java.time.ZonedDateTime;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
-public class CepErrorServiceImpl extends BaseServiceImpl<CepErrorEntity, Integer> implements CepErrorService {
-    @Getter
-    private final CepErrorRepository repository;
-    private final CepErrorDTOConverter cepErrorDTOConverter;
+public class CepErrorServiceImpl extends CachedCrudService<CepErrorEntity, Integer> implements CepErrorService {
 
     @Value("${cep.expiracao-cep-error-dias:#{30}}")
     private Integer expiracaoCepErrorDias;
+    private final CepErrorDTOConverter cepErrorDTOConverter;
+
+    public CepErrorServiceImpl(CepErrorRepository repository, CepErrorDTOConverter cepErrorDTOConverter) {
+        super(repository);
+        this.cepErrorDTOConverter = cepErrorDTOConverter;
+    }
 
     @Override
     public Mono<Boolean> isConsultaPermitida(String cep) {
@@ -43,8 +43,7 @@ public class CepErrorServiceImpl extends BaseServiceImpl<CepErrorEntity, Integer
 
     private Mono<CepError> findByCep(String cep) {
         return cepErrorDTOConverter.toEntity(CepError.builder().cep(cep).build())
-                .mapNotNull(CepErrorEntity::getId)
-                .flatMap(repository::findById)
+                .flatMap(this::findById)
                 .flatMap(cepErrorDTOConverter::toDto);
     }
 }
