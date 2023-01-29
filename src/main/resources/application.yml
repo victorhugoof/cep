@@ -1,7 +1,5 @@
 server:
   port: 8585
-  servlet:
-    context-path: /@project.name@
   error:
     include-message: always
     include-stacktrace: never
@@ -12,7 +10,7 @@ spring:
     name: @project.name@
     version: @project.version@
   jackson:
-    default-property-inclusion: NON_NULL
+    default-property-inclusion: always
     serialization:
       write_dates_as_timestamps: false
       fail-on-empty-beans: false
@@ -39,6 +37,8 @@ management:
     web:
       exposure:
         include: '*'
+cep:
+  expiracao-cep-error-dias: 30
 
 ---
 spring:

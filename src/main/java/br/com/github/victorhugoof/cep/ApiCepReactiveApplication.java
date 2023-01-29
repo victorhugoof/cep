@@ -1,4 +1,4 @@
-package br.com.convcard.apicepreactive;
+package br.com.github.victorhugoof.cep;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
