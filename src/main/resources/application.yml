@@ -18,6 +18,9 @@ spring:
       fail-on-ignored-properties: false
       fail-on-unknown-properties: false
       accept-single-value-as-array: true
+  flyway:
+    enabled: true
+    fail-on-missing-locations: true
 logging:
   file:
     name: logs/@project.name@.log
@@ -39,12 +42,26 @@ management:
         include: '*'
 cep:
   expiracao-cep-error-dias: 30
+  cepaberto:
+    habilitado: true
+    ordem: 0
+    token: f0272ee35fe5718d3de24cec3f51b6d9
+  viacep:
+    habilitado: true
+    ordem: 1
+  convcard:
+    habilitado: true
+    ordem: 999
 
 ---
 spring:
   r2dbc:
     url: r2dbc:postgresql://localhost:5432/cep
     username: postgres
+    password: postgres
+  flyway:
+    url: jdbc:postgresql://localhost:5432/cep
+    user: postgres
     password: postgres
   config:
     activate:
@@ -57,9 +74,13 @@ debug: true
 ---
 spring:
   r2dbc:
-    url: jdbc:postgresql://192.168.150.246:5432/cep
+    url: r2dbc:postgresql://192.168.150.246:5432/cep
     username: pod1
     password: pod1
+  flyway:
+    url: jdbc:postgresql://192.168.150.246:5432/cep
+    user: postgres
+    password: postgres
   config:
     activate:
       on-profile: qa
@@ -67,9 +88,13 @@ spring:
 ---
 spring:
   r2dbc:
-    url: jdbc:postgresql://172.30.212.136:5432/cep
+    url: r2dbc:postgresql://172.30.212.136:5432/cep
     username: pod1
     password: pod1
+  flyway:
+    url: jdbc:postgresql://172.30.212.136:5432/cep
+    user: postgres
+    password: postgres
   config:
     activate:
       on-profile: producao

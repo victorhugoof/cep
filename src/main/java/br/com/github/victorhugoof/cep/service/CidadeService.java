@@ -7,5 +7,5 @@ public interface CidadeService {
 
     Mono<Cidade> findByIbge(Integer ibge);
 
-    Mono<Cidade> save(Cidade cidade);
+    Mono<Cidade> saveIfNotExists(Cidade cidade);
 }

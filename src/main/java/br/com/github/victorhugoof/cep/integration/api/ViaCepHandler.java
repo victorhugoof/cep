@@ -1,4 +1,4 @@
-package br.com.github.victorhugoof.cep.integration.api.viacep;
+package br.com.github.victorhugoof.cep.integration.api;
 
 import br.com.github.victorhugoof.cep.enums.Estado;
 import br.com.github.victorhugoof.cep.enums.OrigemCep;
@@ -6,7 +6,9 @@ import br.com.github.victorhugoof.cep.helper.CepUtils;
 import br.com.github.victorhugoof.cep.integration.CepApi;
 import br.com.github.victorhugoof.cep.integration.CepApiHandler;
 import static java.util.Objects.*;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -18,13 +20,16 @@ public class ViaCepHandler implements CepApiHandler {
 
     private final WebClient webClient;
 
+    @Getter
+    @Value("${cep.viacep.habilitado:#{true}}")
+    private boolean habilitado;
+
+    @Getter
+    @Value("${cep.viacep.ordem:#{0}}")
+    private Integer ordem;
+
     public ViaCepHandler(WebClient.Builder builder) {
         this.webClient = builder.baseUrl("https://viacep.com.br").build();
-    }
-
-    @Override
-    public Integer getOrdem() {
-        return 0;
     }
 
     @Override

@@ -8,6 +8,9 @@ import br.com.github.victorhugoof.cep.model.Cep;
 import br.com.github.victorhugoof.cep.model.CepCompleto;
 import br.com.github.victorhugoof.cep.model.CepError;
 import br.com.github.victorhugoof.cep.model.Cidade;
+import br.com.github.victorhugoof.cep.model.SearchCepInput;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -23,11 +26,17 @@ public class SearchCepServiceImpl implements SearchCepService {
     private final CidadeService cidadeService;
     private final CepCompletoDTOConverter cepCompletoDTOConverter;
     private final ApiCepService apiCepService;
+    private final Validator validator;
 
     @Override
-    public Mono<CepCompleto> searchCep(String cep, boolean isForce) {
-        return cepService.findByCep(cep)
-                .switchIfEmpty(searchAndPersist(cep, isForce))
+    public Mono<CepCompleto> searchCep(SearchCepInput input) {
+        var result = validator.validate(input);
+        if (!result.isEmpty()) {
+            throw new ConstraintViolationException(result);
+        }
+
+        return cepService.findByCep(input.cep())
+                .switchIfEmpty(searchAndPersist(input.cep(), input.force()))
                 .flatMap(this::toCepCompleto);
     }
 
@@ -50,7 +59,7 @@ public class SearchCepServiceImpl implements SearchCepService {
                             .estado(Estado.valueOf(it.getCidade().getEstado().getUf()))
                             .build();
 
-                    return cidadeService.save(cidade).map(s -> it); // FIXME como faz um tap?
+                    return cidadeService.saveIfNotExists(cidade).map(s -> it); // FIXME como faz um tap?
                 })
                 .flatMap(it -> {
                     var dto = Cep.builder()

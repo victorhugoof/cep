@@ -11,6 +11,7 @@ import reactor.core.publisher.Mono;
 @Slf4j
 @Component
 public class CidadeServiceImpl extends CachedCrudService<CidadeEntity, Integer> implements CidadeService {
+
     private final CidadeDTOConverter cidadeDTOConverter;
 
     public CidadeServiceImpl(CidadeRepository repository, CidadeDTOConverter cidadeDTOConverter) {
@@ -26,9 +27,12 @@ public class CidadeServiceImpl extends CachedCrudService<CidadeEntity, Integer> 
     }
 
     @Override
-    public Mono<Cidade> save(Cidade cidade) {
-        return cidadeDTOConverter.toEntity(cidade)
-                .flatMap(this::save)
-                .flatMap(cidadeDTOConverter::toDto);
+    public Mono<Cidade> saveIfNotExists(Cidade cidade) {
+        return findByIbge(cidade.getIbge())
+                .switchIfEmpty(
+                        cidadeDTOConverter.toEntity(cidade)
+                                .flatMap(this::save)
+                                .flatMap(cidadeDTOConverter::toDto)
+                );
     }
 }

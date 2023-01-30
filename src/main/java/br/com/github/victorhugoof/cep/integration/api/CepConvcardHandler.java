@@ -1,11 +1,13 @@
-package br.com.github.victorhugoof.cep.integration.api.convcard;
+package br.com.github.victorhugoof.cep.integration.api;
 
 import br.com.github.victorhugoof.cep.enums.Estado;
 import br.com.github.victorhugoof.cep.enums.OrigemCep;
 import br.com.github.victorhugoof.cep.helper.CepUtils;
 import br.com.github.victorhugoof.cep.integration.CepApi;
 import br.com.github.victorhugoof.cep.integration.CepApiHandler;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -20,13 +22,16 @@ public class CepConvcardHandler implements CepApiHandler {
 
     private final WebClient webClient;
 
+    @Getter
+    @Value("${cep.convcard.habilitado:#{true}}")
+    private boolean habilitado;
+
+    @Getter
+    @Value("${cep.convcard.ordem:#{0}}")
+    private Integer ordem;
+
     public CepConvcardHandler(WebClient.Builder builder) {
         this.webClient = builder.baseUrl("https://api.convcard.com.br/api-cep").build();
-    }
-
-    @Override
-    public Integer getOrdem() {
-        return 1;
     }
 
     @Override
