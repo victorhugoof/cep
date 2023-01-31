@@ -7,5 +7,6 @@ public enum OrigemCep {
     VIA_CEP,
     POSTMON,
     CORREIOS_API,
-    CORREIOS_WEB
+    CORREIOS_WEB,
+    IMPORTACAO
 }

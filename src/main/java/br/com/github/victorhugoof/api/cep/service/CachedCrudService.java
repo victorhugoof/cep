@@ -37,6 +37,7 @@ abstract class CachedCrudService<T extends BaseEntity<I>, I> {
         return findById(entity)
                 .flatMap(existent -> {
                     entity.setUpdatedAt(LocalDateTime.now());
+                    entity.setCreatedAt(existent.getCreatedAt());
                     entity.hasNotNew();
                     return repository.save(entity);
                 })
