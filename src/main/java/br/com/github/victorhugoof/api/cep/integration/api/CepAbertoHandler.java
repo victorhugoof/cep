@@ -2,7 +2,7 @@ package br.com.github.victorhugoof.api.cep.integration.api;
 
 import br.com.github.victorhugoof.api.cep.enums.Estado;
 import br.com.github.victorhugoof.api.cep.enums.OrigemCep;
-import br.com.github.victorhugoof.api.cep.helper.CepUtils;
+import static br.com.github.victorhugoof.api.cep.helper.CepUtils.*;
 import br.com.github.victorhugoof.api.cep.integration.CepApi;
 import br.com.github.victorhugoof.api.cep.integration.CepApiHandler;
 import br.com.github.victorhugoof.api.cep.integration.CidadeApi;
@@ -21,66 +21,90 @@ import java.math.BigDecimal;
 @Slf4j
 @Component
 public class CepAbertoHandler implements CepApiHandler {
-	private static final String API_URL = "https://www.cepAberto.com/api/v3/cep?cep=%s";
-	private final WebClient webClient;
 
-	@Getter
-	@Value("${cep.cep-aberto.habilitado}")
-	private boolean habilitado;
+    private static final String API_URL = "https://www.cepAberto.com/api/v3/cep?cep=%s";
+    private static final String API_URL_NEAREST = "https://www.cepaberto.com/api/v3/nearest?lng=%s&lat=%s";
 
-	@Getter
-	@Value("${cep.cep-aberto.ordem}")
-	private Integer ordem;
+    private final WebClient webClient;
 
-	@Getter
-	@Value("${cep.cep-aberto.token}")
-	private String token;
+    @Getter
+    @Value("${cep.cep-aberto.habilitado}")
+    private boolean habilitado;
 
-	public CepAbertoHandler(WebClient.Builder builder) {
-		this.webClient = builder.build();
-	}
+    @Getter
+    @Value("${cep.cep-aberto.ordem}")
+    private Integer ordem;
 
-	@Override
-	public Mono<CepApi> findCepApi(Integer numCep) {
-		log.info("Buscando no CepAberto");
-		return webClient.get()
-				.uri(API_URL.formatted(CepUtils.parseCep(numCep)))
-				.accept(MediaType.APPLICATION_JSON)
-				.header("Authorization", "Token token=%s".formatted(token))
-				.retrieve()
-				.bodyToMono(CepAbertoModel.class)
-				.filter(it -> nonNull(it) && isNotBlank(it.cep()) && numCep.equals(CepUtils.parseCep(it.cep())))
-				.onErrorResume(e -> {
-					log.debug(e.getMessage());
-					return Mono.empty();
-				})
-				.mapNotNull(this::toCepApi);
-	}
+    @Getter
+    @Value("${cep.cep-aberto.token}")
+    private String token;
 
-	private CepApi toCepApi(CepAbertoModel cep) {
-		return CepApi.builder()
-				.cep(CepUtils.parseCep(cep.cep()))
-				.bairro(cep.bairro())
-				.logradouro(cep.logradouro())
-				.complemento(cep.complemento())
-				.latitude(cep.latitude())
-				.longitude(cep.longitude())
-				.cidade(CidadeApi.builder()
-						.ibge(cep.cidade().ibge())
-						.nome(cep.cidade().nome())
-						.estado(Estado.valueOf(cep.estado().sigla()))
-						.build())
-				.origem(OrigemCep.CEP_ABERTO)
-				.build();
-	}
+    public CepAbertoHandler(WebClient.Builder builder) {
+        this.webClient = builder.build();
+    }
 
-	private record CepAbertoModel(String cep, String complemento, String bairro, String logradouro,
-								  BigDecimal altitude, BigDecimal latitude, BigDecimal longitude,
-								  CepAbertoCidadeModel cidade, CepAbertoEstadoModel estado) {
+    @Override
+    public Mono<CepApi> findCepApi(Integer numCep) {
+        log.info("Buscando no CepAberto");
+        return webClient.get()
+                .uri(API_URL.formatted(parseCep(numCep)))
+                .accept(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Token token=%s".formatted(token))
+                .retrieve()
+                .bodyToMono(CepAbertoModel.class)
+                .filter(it -> nonNull(it) && isNotBlank(it.cep()) && numCep.equals(parseCep(it.cep())))
+                .onErrorResume(e -> {
+                    log.debug(e.getMessage());
+                    return Mono.empty();
+                })
+                .mapNotNull(this::toCepApi);
+    }
 
-	}
+    @Override
+    public Mono<CepApi> findCepApi(BigDecimal longitude, BigDecimal latitude) {
+        log.info("Buscando no CepAberto");
+        return webClient.get()
+                .uri(API_URL_NEAREST.formatted(longitude, latitude))
+                .accept(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Token token=%s".formatted(token))
+                .retrieve()
+                .bodyToMono(CepAbertoModel.class)
+                .filter(it -> nonNull(it) && isNotBlank(it.cep()))
+                .onErrorResume(e -> {
+                    log.debug(e.getMessage());
+                    return Mono.empty();
+                })
+                .mapNotNull(this::toCepApi);
+    }
 
-	private record CepAbertoCidadeModel(Integer ibge, String nome, Integer ddd) {}
+    private CepApi toCepApi(CepAbertoModel cep) {
+        return CepApi.builder()
+                .cep(parseCep(cep.cep()))
+                .bairro(cep.bairro())
+                .logradouro(cep.logradouro())
+                .complemento(cep.complemento())
+                .latitude(cep.latitude())
+                .longitude(cep.longitude())
+                .cidade(CidadeApi.builder()
+                        .ibge(cep.cidade().ibge())
+                        .nome(cep.cidade().nome())
+                        .estado(Estado.valueOf(cep.estado().sigla()))
+                        .build())
+                .origem(OrigemCep.CEP_ABERTO)
+                .build();
+    }
 
-	private record CepAbertoEstadoModel(String sigla) {}
+    private record CepAbertoModel(String cep, String complemento, String bairro, String logradouro,
+                                  BigDecimal altitude, BigDecimal latitude, BigDecimal longitude,
+                                  CepAbertoCidadeModel cidade, CepAbertoEstadoModel estado) {
+
+    }
+
+    private record CepAbertoCidadeModel(Integer ibge, String nome, Integer ddd) {
+
+    }
+
+    private record CepAbertoEstadoModel(String sigla) {
+
+    }
 }

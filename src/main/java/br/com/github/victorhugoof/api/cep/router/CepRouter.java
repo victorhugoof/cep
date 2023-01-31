@@ -14,6 +14,7 @@ public class CepRouter {
     @Bean
     public RouterFunction<ServerResponse> route(CepHandler handler) {
         return RouterFunctions
-                .route(GET("/cep/{cep}"), handler::findByCep);
+                .route(GET("/cep/geo"), handler::findByGeo)
+                .andRoute(GET("/cep/{cep}"), handler::findByCep);
     }
 }

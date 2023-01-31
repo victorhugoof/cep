@@ -1,11 +1,11 @@
 package br.com.github.victorhugoof.api.cep.integration.api;
 
 import br.com.github.victorhugoof.api.cep.enums.Estado;
-import br.com.github.victorhugoof.api.cep.helper.CepUtils;
+import br.com.github.victorhugoof.api.cep.enums.OrigemCep;
+import static br.com.github.victorhugoof.api.cep.helper.CepUtils.*;
 import br.com.github.victorhugoof.api.cep.integration.CepApi;
 import br.com.github.victorhugoof.api.cep.integration.CepApiHandler;
 import br.com.github.victorhugoof.api.cep.integration.CidadeApi;
-import br.com.github.victorhugoof.api.cep.enums.OrigemCep;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import static java.util.Objects.*;
 import lombok.Getter;
@@ -40,11 +40,11 @@ public class PostmonHandler implements CepApiHandler {
     public Mono<CepApi> findCepApi(Integer numCep) {
         log.info("Buscando no Postmon");
         return webClient.get()
-                .uri(API_URL.formatted(CepUtils.parseCep(numCep)))
+                .uri(API_URL.formatted(parseCep(numCep)))
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .bodyToMono(PostmonModel.class)
-                .filter(it -> nonNull(it) && isNotBlank(it.cep()) && numCep.equals(CepUtils.parseCep(it.cep())))
+                .filter(it -> nonNull(it) && isNotBlank(it.cep()) && numCep.equals(parseCep(it.cep())))
                 .onErrorResume(e -> {
                     log.debug(e.getMessage());
                     return Mono.empty();
@@ -54,7 +54,7 @@ public class PostmonHandler implements CepApiHandler {
 
     private CepApi toCepApi(PostmonModel cep) {
         return CepApi.builder()
-                .cep(CepUtils.parseCep(cep.cep()))
+                .cep(parseCep(cep.cep()))
                 .bairro(cep.bairro())
                 .logradouro(cep.logradouro())
                 .complemento(cep.complemento())

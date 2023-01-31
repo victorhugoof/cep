@@ -1,7 +1,7 @@
 package br.com.github.victorhugoof.api.cep.mapper;
 
 import br.com.github.victorhugoof.api.cep.domain.CepEntity;
-import br.com.github.victorhugoof.api.cep.helper.CepUtils;
+import static br.com.github.victorhugoof.api.cep.helper.CepUtils.*;
 import br.com.github.victorhugoof.api.cep.model.Cep;
 import static java.util.Objects.*;
 import org.springframework.stereotype.Component;
@@ -14,7 +14,7 @@ public class CepDTOConverter {
 
     public Mono<Cep> toDto(CepEntity cep) {
         var dto = Cep.builder()
-                .cep(CepUtils.parseCep(cep.getCep()))
+                .cep(parseCep(cep.getCep()))
                 .bairro(cep.getBairro())
                 .complemento(cep.getComplemento())
                 .logradouro(cep.getLogradouro())
@@ -30,7 +30,7 @@ public class CepDTOConverter {
 
     public Mono<CepEntity> toEntity(Cep cep) {
         var entity = CepEntity.builder()
-                .cep(CepUtils.parseCep(cep.getCep()))
+                .cep(parseCep(cep.getCep()))
                 .bairro(cep.getBairro())
                 .complemento(cep.getComplemento())
                 .logradouro(cep.getLogradouro())

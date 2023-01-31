@@ -2,6 +2,7 @@ package br.com.github.victorhugoof.api.cep.integration.api;
 
 import br.com.github.victorhugoof.api.cep.enums.Estado;
 import br.com.github.victorhugoof.api.cep.helper.CepUtils;
+import static br.com.github.victorhugoof.api.cep.helper.CepUtils.*;
 import br.com.github.victorhugoof.api.cep.integration.CepApi;
 import br.com.github.victorhugoof.api.cep.integration.CepApiHandler;
 import br.com.github.victorhugoof.api.cep.integration.CidadeApi;
@@ -40,8 +41,8 @@ public class OpenStreetHandler implements CepApiHandler {
     @Override
     public Mono<CepApi> findCepApi(Integer numCep) {
         log.info("Buscando no OpenStreet");
-        return doExecuteFind(CepUtils.parseCep(numCep))
-                .switchIfEmpty(doExecuteFind(CepUtils.parseCepFormat(numCep)))
+        return doExecuteFind(parseCep(numCep))
+                .switchIfEmpty(doExecuteFind(parseCepFormat(numCep)))
                 .mapNotNull(this::toCepApi);
     }
 
@@ -56,7 +57,7 @@ public class OpenStreetHandler implements CepApiHandler {
                         && nonNull(res.address())
                         && isNotBlank(res.address().cidade())
                         && isNotBlank(res.address().state())
-                        && CepUtils.parseCep(res.address().postcode()).equals(CepUtils.parseCep(numCep)))
+                        && parseCep(res.address().postcode()).equals(parseCep(numCep)))
                 .next()
                 .onErrorResume(e -> {
                     log.debug(e.getMessage());
@@ -66,7 +67,7 @@ public class OpenStreetHandler implements CepApiHandler {
 
     private CepApi toCepApi(OpenStreetModel cep) {
         return CepApi.builder()
-                .cep(CepUtils.parseCep(cep.address().postcode()))
+                .cep(parseCep(cep.address().postcode()))
                 .bairro(cep.address().suburb())
                 .logradouro(cep.address().road())
                 .complemento(null)

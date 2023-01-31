@@ -2,6 +2,7 @@ package br.com.github.victorhugoof.api.cep.service;
 
 import static br.com.github.victorhugoof.api.cep.helper.CepUtils.*;
 import br.com.github.victorhugoof.api.cep.integration.ApiCepService;
+import br.com.github.victorhugoof.api.cep.integration.CepApi;
 import br.com.github.victorhugoof.api.cep.integration.CidadeApi;
 import br.com.github.victorhugoof.api.cep.mapper.CepCompletoDTOConverter;
 import br.com.github.victorhugoof.api.cep.model.Cep;
@@ -9,6 +10,8 @@ import br.com.github.victorhugoof.api.cep.model.CepCompleto;
 import br.com.github.victorhugoof.api.cep.model.CepError;
 import br.com.github.victorhugoof.api.cep.model.Cidade;
 import br.com.github.victorhugoof.api.cep.model.SearchCepInput;
+import br.com.github.victorhugoof.api.cep.model.SearchGeoInput;
+import br.com.github.victorhugoof.api.cep.repository.CepRepository;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
 import static java.util.Objects.*;
@@ -16,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 
 @Component
@@ -23,6 +27,7 @@ import java.time.ZonedDateTime;
 public class SearchCepServiceImpl implements SearchCepService {
 
     private final CepService cepService;
+    private final CepRepository cepRepository;
     private final CepErrorService cepErrorService;
     private final CidadeService cidadeService;
     private final CepCompletoDTOConverter cepCompletoDTOConverter;
@@ -46,9 +51,21 @@ public class SearchCepServiceImpl implements SearchCepService {
                 .flatMap(this::toCepCompleto);
     }
 
+    @Override
+    public Mono<CepCompleto> searchGeo(SearchGeoInput input) {
+        return cepRepository.searchByGeo(input.longitude(), input.latitude(), 5000)
+                .switchIfEmpty(searchByGeoAndPersist(input.longitude(), input.latitude()))
+                .flatMap(this::toCepCompleto);
+    }
+
     private Mono<CepCompleto> toCepCompleto(Cep cep) {
         return cidadeService.findByIbge(cep.getCidadeIbge())
                 .flatMap(cid -> cepCompletoDTOConverter.toDto(cep, cid));
+    }
+
+    private Mono<Cep> searchByGeoAndPersist(BigDecimal longitude, BigDecimal latitude) {
+        return apiCepService.findCepApi(longitude, latitude)
+                .flatMap(this::persist);
     }
 
     private Mono<Cep> searchAndPersist(String cep, boolean isForce) {
@@ -58,6 +75,12 @@ public class SearchCepServiceImpl implements SearchCepService {
 
     private Mono<Cep> search(String cep) {
         return apiCepService.findCepApi(parseCep(cep))
+                .flatMap(this::persist)
+                .switchIfEmpty(salvaConsultaErro(cep));
+    }
+
+    private Mono<Cep> persist(CepApi cepApi) {
+        return Mono.just(cepApi)
                 .flatMap(it -> searchCidade(it.getCidade())
                         .map(res -> {
                             it.setCidade(CidadeApi.builder()
@@ -79,8 +102,7 @@ public class SearchCepServiceImpl implements SearchCepService {
                             .origem(it.getOrigem())
                             .build();
                     return cepService.save(dto);
-                })
-                .switchIfEmpty(salvaConsultaErro(cep));
+                });
     }
 
     private Mono<Cidade> searchCidade(CidadeApi cidade) {

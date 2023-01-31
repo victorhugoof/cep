@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -22,6 +23,11 @@ public class ApiCepServiceImpl implements ApiCepService {
     @Override
     public Mono<CepApi> findCepApi(Integer numCep) {
         return findFirstResult(getApisIntegrationCepOrdered(), handler -> handler.findCepApi(numCep));
+    }
+
+    @Override
+    public Mono<CepApi> findCepApi(BigDecimal longitude, BigDecimal latitude) {
+        return findFirstResult(getApisIntegrationCepOrdered(), handler -> handler.findCepApi(longitude, latitude));
     }
 
     @Override
