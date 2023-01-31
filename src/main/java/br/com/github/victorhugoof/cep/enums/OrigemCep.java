@@ -6,6 +6,6 @@ public enum OrigemCep {
     OPEN_STREET,
     VIA_CEP,
     POSTMON,
-    CORREIOS,
+    CORREIOS_API,
     CORREIOS_WEB
 }

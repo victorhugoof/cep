@@ -1,6 +1,5 @@
 package br.com.github.victorhugoof.cep.integration;
 
-import br.com.github.victorhugoof.cep.enums.Estado;
 import br.com.github.victorhugoof.cep.enums.OrigemCep;
 import lombok.Builder;
 import lombok.Data;
@@ -17,14 +16,6 @@ public class CepApi {
     private String complemento;
     private BigDecimal latitude;
     private BigDecimal longitude;
-    private Cidade cidade;
+    private CidadeApi cidade;
     private OrigemCep origem;
-
-    @Data
-    @Builder
-    public static final class Cidade {
-        private Integer ibge;
-        private String nome;
-        private Estado estado;
-    }
 }

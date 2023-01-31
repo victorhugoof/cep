@@ -2,12 +2,14 @@ package br.com.github.victorhugoof.cep.integration.api;
 
 import br.com.github.victorhugoof.cep.enums.Estado;
 import br.com.github.victorhugoof.cep.enums.OrigemCep;
-import br.com.github.victorhugoof.cep.helper.CepUtils;
+import static br.com.github.victorhugoof.cep.helper.CepUtils.*;
 import br.com.github.victorhugoof.cep.integration.CepApi;
 import br.com.github.victorhugoof.cep.integration.CepApiHandler;
+import br.com.github.victorhugoof.cep.integration.CidadeApi;
 import static java.util.Objects.*;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import static org.apache.commons.lang3.StringUtils.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -19,42 +21,37 @@ import java.math.BigDecimal;
 @Slf4j
 @Component
 public class CepAbertoHandler implements CepApiHandler {
+	private static final String API_URL = "https://www.cepAberto.com/api/v3/cep?cep=%s";
 	private final WebClient webClient;
 
 	@Getter
-	@Value("${cep.cepaberto.habilitado:#{true}}")
+	@Value("${cep.cep-aberto.habilitado}")
 	private boolean habilitado;
 
 	@Getter
-	@Value("${cep.cepaberto.ordem:#{0}}")
+	@Value("${cep.cep-aberto.ordem}")
 	private Integer ordem;
 
 	@Getter
-	@Value("${cep.cepaberto.token:#{'f0272ee35fe5718d3de24cec3f51b6d9'}}")
+	@Value("${cep.cep-aberto.token}")
 	private String token;
 
 	public CepAbertoHandler(WebClient.Builder builder) {
-		this.webClient = builder.baseUrl("https://www.cepaberto.com").build();
+		this.webClient = builder.build();
 	}
 
 	@Override
 	public Mono<CepApi> findCepApi(Integer numCep) {
-		log.info("Buscando no CEPABERTO");
+		log.info("Buscando no CepAberto");
 		return webClient.get()
-				.uri(String.format("/api/v3/cep?cep=%s", CepUtils.parseCep(numCep)))
+				.uri(API_URL.formatted(parseCep(numCep)))
 				.accept(MediaType.APPLICATION_JSON)
-				.header("Authorization", String.format("Token token=%s", token))
+				.header("Authorization", "Token token=%s".formatted(token))
 				.retrieve()
 				.bodyToMono(CepAbertoModel.class)
-				.flatMap(res -> {
-					if (isNull(res)) {
-						log.error("Erro ao encontrar no cep aberto, response null");
-						return Mono.empty();
-					}
-					return Mono.just(res);
-				})
+				.filter(it -> nonNull(it) && isNotBlank(it.cep()) && numCep.equals(parseCep(it.cep())))
 				.onErrorResume(e -> {
-					log.error(e.getMessage(), e);
+					log.debug(e.getMessage());
 					return Mono.empty();
 				})
 				.mapNotNull(this::toCepApi);
@@ -62,13 +59,13 @@ public class CepAbertoHandler implements CepApiHandler {
 
 	private CepApi toCepApi(CepAbertoModel cep) {
 		return CepApi.builder()
-				.cep(CepUtils.parseCep(cep.cep()))
+				.cep(parseCep(cep.cep()))
 				.bairro(cep.bairro())
 				.logradouro(cep.logradouro())
 				.complemento(cep.complemento())
 				.latitude(cep.latitude())
 				.longitude(cep.longitude())
-				.cidade(CepApi.Cidade.builder()
+				.cidade(CidadeApi.builder()
 						.ibge(cep.cidade().ibge())
 						.nome(cep.cidade().nome())
 						.estado(Estado.valueOf(cep.estado().sigla()))

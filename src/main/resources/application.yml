@@ -42,16 +42,28 @@ management:
         include: '*'
 cep:
   expiracao-cep-error-dias: 30
-  cepaberto:
+  ibge:
+    habilitado: true
+    ordem: -1
+  cep-aberto:
     habilitado: true
     ordem: 0
     token: f0272ee35fe5718d3de24cec3f51b6d9
-  viacep:
+  open-street:
     habilitado: true
     ordem: 1
-  convcard:
+  via-cep:
     habilitado: true
-    ordem: 999
+    ordem: 2
+  postmon:
+    habilitado: true
+    ordem: 3
+  correios-api:
+    habilitado: true
+    ordem: 4
+  correios-web:
+    habilitado: true
+    ordem: 5
 
 ---
 spring:
@@ -79,8 +91,8 @@ spring:
     password: pod1
   flyway:
     url: jdbc:postgresql://192.168.150.246:5432/cep
-    user: postgres
-    password: postgres
+    user: pod1
+    password: pod1
   config:
     activate:
       on-profile: qa
@@ -93,8 +105,8 @@ spring:
     password: pod1
   flyway:
     url: jdbc:postgresql://172.30.212.136:5432/cep
-    user: postgres
-    password: postgres
+    user: pod1
+    password: pod1
   config:
     activate:
       on-profile: producao

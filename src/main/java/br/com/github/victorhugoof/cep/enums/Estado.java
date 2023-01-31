@@ -3,6 +3,10 @@ package br.com.github.victorhugoof.cep.enums;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.apache.commons.lang3.ObjectUtils;
+import static org.apache.commons.lang3.ObjectUtils.*;
+import org.apache.commons.lang3.StringUtils;
+import static org.apache.commons.lang3.StringUtils.*;
 
 @Getter
 @AllArgsConstructor
@@ -41,5 +45,22 @@ public enum Estado {
 
     public String getUf() {
         return name();
+    }
+
+    public static Estado find(String nomeOrUf) {
+        var term = stripAccents(firstNonNull(nomeOrUf, "").trim().toUpperCase());
+
+        for (var item : values()) {
+            if (item.getUf().equalsIgnoreCase(term)) {
+                return item;
+            }
+
+            var nomeUf = stripAccents(firstNonNull(item.getNome(), "").trim().toUpperCase());
+            if (nomeUf.equalsIgnoreCase(term)) {
+                return item;
+            }
+        }
+
+        throw new IllegalArgumentException("No enum constant for %s".formatted(nomeOrUf));
     }
 }

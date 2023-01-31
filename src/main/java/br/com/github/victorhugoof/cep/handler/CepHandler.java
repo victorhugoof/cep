@@ -23,9 +23,10 @@ public class CepHandler {
     public Mono<ServerResponse> findByCep(ServerRequest request) {
         var cep = request.pathVariable("cep");
         var force = Boolean.parseBoolean(request.queryParam("force").orElse("false"));
+        var update = Boolean.parseBoolean(request.queryParam("update").orElse("false"));
         var contentType = request.headers().contentType().orElse(MediaType.APPLICATION_JSON);
 
-        return searchCepService.searchCep(new SearchCepInput(cep, force))
+        return searchCepService.searchCep(new SearchCepInput(cep, force, update))
                 .flatMap(res -> ServerResponse.ok().contentType(contentType).body(BodyInserters.fromValue(res)))
                 .switchIfEmpty(ServerResponse.notFound().build());
     }

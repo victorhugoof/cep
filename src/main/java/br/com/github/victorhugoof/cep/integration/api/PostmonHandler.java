@@ -7,6 +7,7 @@ import static br.com.github.victorhugoof.cep.helper.CepUtils.*;
 import br.com.github.victorhugoof.cep.integration.CepApi;
 import br.com.github.victorhugoof.cep.integration.CepApiHandler;
 import br.com.github.victorhugoof.cep.integration.CidadeApi;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import static java.util.Objects.*;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -19,36 +20,31 @@ import reactor.core.publisher.Mono;
 
 @Slf4j
 @Component
-public class ViaCepHandler implements CepApiHandler {
-    private static final String API_URL = "https://viaCep.com.br/ws/%s/json";
+public class PostmonHandler implements CepApiHandler {
+
+    private static final String API_URL = "https://api.postmon.com.br/v1/cep/%s";
     private final WebClient webClient;
 
     @Getter
-    @Value("${cep.via-cep.habilitado}")
+    @Value("${cep.postmon.habilitado}")
     private boolean habilitado;
 
     @Getter
-    @Value("${cep.via-cep.ordem}")
+    @Value("${cep.postmon.ordem}")
     private Integer ordem;
 
-    public ViaCepHandler(WebClient.Builder builder) {
+    public PostmonHandler(WebClient.Builder builder) {
         this.webClient = builder.build();
     }
 
     @Override
     public Mono<CepApi> findCepApi(Integer numCep) {
-		log.info("Buscando no ViaCep");
+        log.info("Buscando no Postmon");
         return webClient.get()
                 .uri(API_URL.formatted(parseCep(numCep)))
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
-                .bodyToMono(ViaCepModel.class)
-                .flatMap(res -> {
-                    if (isNull(res) || res.erro()) {
-                        return Mono.empty();
-                    }
-                    return Mono.just(res);
-                })
+                .bodyToMono(PostmonModel.class)
                 .filter(it -> nonNull(it) && isNotBlank(it.cep()) && numCep.equals(parseCep(it.cep())))
                 .onErrorResume(e -> {
                     log.debug(e.getMessage());
@@ -57,7 +53,7 @@ public class ViaCepHandler implements CepApiHandler {
                 .mapNotNull(this::toCepApi);
     }
 
-    private CepApi toCepApi(ViaCepModel cep) {
+    private CepApi toCepApi(PostmonModel cep) {
         return CepApi.builder()
                 .cep(parseCep(cep.cep()))
                 .bairro(cep.bairro())
@@ -66,17 +62,33 @@ public class ViaCepHandler implements CepApiHandler {
                 .latitude(null)
                 .longitude(null)
                 .cidade(CidadeApi.builder()
-                        .ibge(cep.ibge())
-                        .nome(cep.localidade())
-                        .estado(Estado.valueOf(cep.uf()))
+                        .ibge(cep.cidadeInfo().codigoIbge())
+                        .nome(cep.cidade())
+                        .estado(Estado.valueOf(cep.estado()))
                         .build())
-                .origem(OrigemCep.VIA_CEP)
+                .origem(OrigemCep.POSTMON)
                 .build();
     }
 
-    private record ViaCepModel(String cep, String logradouro, String complemento,
-                               String bairro, String localidade, String uf,
-                               String unidade, Integer ibge, String gia, boolean erro) {
+    private record PostmonModel(String cep, String complemento, String bairro, String logradouro, String cidade, String estado,
+                                @JsonAlias("cidade_info") PostmonCidadeModel cidadeInfo,
+                                @JsonAlias("estado_info") PostmonEstadoModel estadoInfo
+    ) {
+
+    }
+
+    private record PostmonCidadeModel(
+            @JsonAlias("codigo_ibge") Integer codigoIbge,
+            @JsonAlias("area_km2") String areaKm2
+    ) {
+
+    }
+
+    private record PostmonEstadoModel(
+            @JsonAlias("codigo_ibge") Integer codigoIbge,
+            @JsonAlias("area_km2") String areaKm2,
+            String nome
+    ) {
 
     }
 }

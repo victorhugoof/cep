@@ -1,8 +1,8 @@
 package br.com.github.victorhugoof.cep.service;
 
-import br.com.github.victorhugoof.cep.enums.Estado;
-import br.com.github.victorhugoof.cep.helper.CepUtils;
+import static br.com.github.victorhugoof.cep.helper.CepUtils.*;
 import br.com.github.victorhugoof.cep.integration.ApiCepService;
+import br.com.github.victorhugoof.cep.integration.CidadeApi;
 import br.com.github.victorhugoof.cep.mapper.CepCompletoDTOConverter;
 import br.com.github.victorhugoof.cep.model.Cep;
 import br.com.github.victorhugoof.cep.model.CepCompleto;
@@ -11,6 +11,7 @@ import br.com.github.victorhugoof.cep.model.Cidade;
 import br.com.github.victorhugoof.cep.model.SearchCepInput;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
+import static java.util.Objects.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -35,6 +36,11 @@ public class SearchCepServiceImpl implements SearchCepService {
             throw new ConstraintViolationException(result);
         }
 
+        if (input.update()) {
+            return searchAndPersist(input.cep(), true)
+                    .flatMap(this::toCepCompleto);
+        }
+
         return cepService.findByCep(input.cep())
                 .switchIfEmpty(searchAndPersist(input.cep(), input.force()))
                 .flatMap(this::toCepCompleto);
@@ -47,23 +53,23 @@ public class SearchCepServiceImpl implements SearchCepService {
 
     private Mono<Cep> searchAndPersist(String cep, boolean isForce) {
         return isConsultaPermitida(cep, isForce)
-                .flatMap(isConsultar -> isConsultar ? buscarCepConvcard(cep) : Mono.empty());
+                .flatMap(isConsultar -> isConsultar ? search(cep) : Mono.empty());
     }
 
-    private Mono<Cep> buscarCepConvcard(String cep) {
-        return apiCepService.findCepApi(CepUtils.parseCep(cep))
-                .flatMap(it -> {
-                    var cidade = Cidade.builder()
-                            .ibge(it.getCidade().getIbge())
-                            .nome(it.getCidade().getNome())
-                            .estado(Estado.valueOf(it.getCidade().getEstado().getUf()))
-                            .build();
-
-                    return cidadeService.saveIfNotExists(cidade).map(s -> it); // FIXME como faz um tap?
-                })
+    private Mono<Cep> search(String cep) {
+        return apiCepService.findCepApi(parseCep(cep))
+                .flatMap(it -> searchCidade(it.getCidade())
+                        .map(res -> {
+                            it.setCidade(CidadeApi.builder()
+                                    .ibge(res.getIbge())
+                                    .nome(res.getNome())
+                                    .estado(res.getEstado())
+                                    .build());
+                            return it;
+                        }))
                 .flatMap(it -> {
                     var dto = Cep.builder()
-                            .cep(CepUtils.parseCep(it.getCep()))
+                            .cep(parseCep(it.getCep()))
                             .bairro(it.getBairro())
                             .complemento(it.getComplemento())
                             .logradouro(it.getLogradouro())
@@ -75,6 +81,27 @@ public class SearchCepServiceImpl implements SearchCepService {
                     return cepService.save(dto);
                 })
                 .switchIfEmpty(salvaConsultaErro(cep));
+    }
+
+    private Mono<Cidade> searchCidade(CidadeApi cidade) {
+        if (isNull(cidade.getIbge())) {
+            return cidadeService.findByNomeUf(cidade.getNome(), cidade.getEstado())
+                    .switchIfEmpty(
+                            apiCepService.findCidadeApi(cidade.getNome(), cidade.getEstado())
+                                    .map(this::toCidadeDto)
+                                    .flatMap(cidadeService::saveIfNotExists)
+                    )
+                    .switchIfEmpty(Mono.error(new IllegalArgumentException("Não foi possível encontrar a cidade %s".formatted(cidade.getNome()))));
+        }
+
+        return cidadeService.findByIbge(cidade.getIbge())
+                .switchIfEmpty(
+                        apiCepService.findCidadeApi(cidade.getIbge())
+                                .map(this::toCidadeDto)
+                                .flatMap(cidadeService::saveIfNotExists)
+                )
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("Não foi possível encontrar a cidade %s".formatted(cidade.getIbge()))));
+
     }
 
     private Mono<Cep> salvaConsultaErro(String cep) {
@@ -90,5 +117,13 @@ public class SearchCepServiceImpl implements SearchCepService {
             return Mono.just(true);
         }
         return cepErrorService.isConsultaPermitida(cep);
+    }
+
+    private Cidade toCidadeDto(CidadeApi cidade) {
+        return Cidade.builder()
+                .ibge(cidade.getIbge())
+                .nome(cidade.getNome())
+                .estado(cidade.getEstado())
+                .build();
     }
 }

@@ -1,0 +1,26 @@
+version: "3.9"
+
+networks:
+  triercloud-net:
+    external:
+      name: triercloud-net
+
+services:
+  api-cep-reactive:
+    container_name: "api-cep-reactive"
+    image: victorhugoof/cep:0.0.1-SNAPSHOT
+    networks:
+      - triercloud-net
+    ports:
+      - "9595:9595"
+    extra_hosts:
+      - "local.triercloud.com.br:127.0.0.1"
+    environment:
+      SERVER_PORT: "9595"
+      SPRING_PROFILES_ACTIVE: "qa"
+      SPRING_R2DBC_URL: "r2dbc:postgresql://postgres:5432/cep"
+      SPRING_R2DBC_USERNAME: "postgres"
+      SPRING_R2DBC_PASSWORD: "postgres"
+      SPRING_FLYWAY_URL: "jdbc:postgresql://postgres:5432/cep"
+      SPRING_FLYWAY_USER: "postgres"
+      SPRING_FLYWAY_PASSWORD: "postgres"

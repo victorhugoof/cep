@@ -1,6 +1,7 @@
 package br.com.github.victorhugoof.cep.service;
 
 import br.com.github.victorhugoof.cep.domain.CidadeEntity;
+import br.com.github.victorhugoof.cep.enums.Estado;
 import br.com.github.victorhugoof.cep.mapper.CidadeDTOConverter;
 import br.com.github.victorhugoof.cep.model.Cidade;
 import br.com.github.victorhugoof.cep.repository.CidadeRepository;
@@ -12,10 +13,12 @@ import reactor.core.publisher.Mono;
 @Component
 public class CidadeServiceImpl extends CachedCrudService<CidadeEntity, Integer> implements CidadeService {
 
+    private final CidadeRepository repository;
     private final CidadeDTOConverter cidadeDTOConverter;
 
     public CidadeServiceImpl(CidadeRepository repository, CidadeDTOConverter cidadeDTOConverter) {
         super(repository);
+        this.repository = repository;
         this.cidadeDTOConverter = cidadeDTOConverter;
     }
 
@@ -23,6 +26,12 @@ public class CidadeServiceImpl extends CachedCrudService<CidadeEntity, Integer> 
     public Mono<Cidade> findByIbge(Integer ibge) {
         return cidadeDTOConverter.toEntity(Cidade.builder().ibge(ibge).build())
                 .flatMap(this::findById)
+                .flatMap(cidadeDTOConverter::toDto);
+    }
+
+    @Override
+    public Mono<Cidade> findByNomeUf(String nome, Estado estado) {
+        return repository.findFirstByNomeIgnoreCaseAndEstado(nome, estado)
                 .flatMap(cidadeDTOConverter::toDto);
     }
 
