@@ -11,7 +11,6 @@ import br.com.github.victorhugoof.api.cep.model.CepError;
 import br.com.github.victorhugoof.api.cep.model.Cidade;
 import br.com.github.victorhugoof.api.cep.model.SearchCepInput;
 import br.com.github.victorhugoof.api.cep.model.SearchGeoInput;
-import br.com.github.victorhugoof.api.cep.repository.CepRepository;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
 import static java.util.Objects.*;
@@ -25,9 +24,7 @@ import java.time.ZonedDateTime;
 @Component
 @RequiredArgsConstructor
 public class SearchCepServiceImpl implements SearchCepService {
-
     private final CepService cepService;
-    private final CepRepository cepRepository;
     private final CepErrorService cepErrorService;
     private final CidadeService cidadeService;
     private final CepCompletoDTOConverter cepCompletoDTOConverter;
@@ -53,7 +50,7 @@ public class SearchCepServiceImpl implements SearchCepService {
 
     @Override
     public Mono<CepCompleto> searchGeo(SearchGeoInput input) {
-        return cepRepository.searchByGeo(input.longitude(), input.latitude(), 5000)
+        return cepService.findFirstByGeo(input.longitude(), input.latitude(), 5000)
                 .switchIfEmpty(searchByGeoAndPersist(input.longitude(), input.latitude()))
                 .flatMap(this::toCepCompleto);
     }

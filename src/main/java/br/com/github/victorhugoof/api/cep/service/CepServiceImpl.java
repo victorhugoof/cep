@@ -8,13 +8,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
+
 @Slf4j
 @Component
 public class CepServiceImpl extends CachedCrudService<CepEntity, Integer> implements CepService {
+    private final CepRepository cepRepository;
     private final CepDTOConverter cepDTOConverter;
 
     public CepServiceImpl(CepRepository repository, CepDTOConverter cepDTOConverter) {
         super(repository);
+        this.cepRepository = repository;
         this.cepDTOConverter = cepDTOConverter;
     }
 
@@ -29,6 +33,12 @@ public class CepServiceImpl extends CachedCrudService<CepEntity, Integer> implem
     public Mono<Cep> save(Cep cep) {
         return cepDTOConverter.toEntity(cep)
                 .flatMap(this::save)
+                .flatMap(cepDTOConverter::toDto);
+    }
+
+    @Override
+    public Mono<Cep> findFirstByGeo(BigDecimal longitude, BigDecimal latitude, Integer precisaoMetros) {
+        return cepRepository.findFirstByGeo(longitude, latitude, precisaoMetros)
                 .flatMap(cepDTOConverter::toDto);
     }
 }

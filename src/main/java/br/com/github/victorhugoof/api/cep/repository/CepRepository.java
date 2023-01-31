@@ -1,11 +1,9 @@
 package br.com.github.victorhugoof.api.cep.repository;
 
 import br.com.github.victorhugoof.api.cep.domain.CepEntity;
-import br.com.github.victorhugoof.api.cep.model.Cep;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.r2dbc.repository.R2dbcRepository;
 import org.springframework.data.repository.query.Param;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
@@ -21,5 +19,5 @@ public interface CepRepository extends R2dbcRepository<CepEntity, Integer> {
             " WHERE t.distancia_metros <= :precisaoMetros " +
             " ORDER BY t.distancia_metros " +
             " LIMIT 1 ")
-    Mono<Cep> searchByGeo(@Param("longitude") BigDecimal longitude, @Param("latitude") BigDecimal latitude, @Param("precisaoMetros") Integer precisaoMetros);
+    Mono<CepEntity> findFirstByGeo(@Param("longitude") BigDecimal longitude, @Param("latitude") BigDecimal latitude, @Param("precisaoMetros") Integer precisaoMetros);
 }

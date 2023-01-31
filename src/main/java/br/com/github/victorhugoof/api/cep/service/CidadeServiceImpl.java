@@ -31,7 +31,7 @@ public class CidadeServiceImpl extends CachedCrudService<CidadeEntity, Integer> 
 
     @Override
     public Mono<Cidade> findByNomeUf(String nome, Estado estado) {
-        return repository.findFirstByNomeIgnoreCaseAndEstado(nome, estado)
+        return repository.findFirstByNomeAndEstado(nome, estado)
                 .flatMap(cidadeDTOConverter::toDto);
     }
 
