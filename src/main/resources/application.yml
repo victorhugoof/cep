@@ -21,6 +21,8 @@ spring:
   flyway:
     enabled: true
     fail-on-missing-locations: true
+  webflux:
+    base-path: /@project.name@
 logging:
   file:
     name: logs/@project.name@.log

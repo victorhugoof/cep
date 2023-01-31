@@ -6,17 +6,17 @@ networks:
       name: triercloud-net
 
 services:
-  api-cep-reactive:
-    container_name: "api-cep-reactive"
-    image: victorhugoof/cep:0.0.1-SNAPSHOT
+  api-cep:
+    container_name: "api-cep"
+    image: convcard/api-cep:2.0.0
     networks:
       - triercloud-net
     ports:
-      - "9595:9595"
+      - "8585:8585"
     extra_hosts:
       - "local.triercloud.com.br:127.0.0.1"
     environment:
-      SERVER_PORT: "9595"
+      SERVER_PORT: "8585"
       SPRING_PROFILES_ACTIVE: "qa"
       SPRING_R2DBC_URL: "r2dbc:postgresql://postgres:5432/cep"
       SPRING_R2DBC_USERNAME: "postgres"
