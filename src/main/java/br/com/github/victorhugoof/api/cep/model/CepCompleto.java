@@ -10,6 +10,7 @@ import java.time.ZonedDateTime;
 @Data
 @Builder
 public class CepCompleto {
+
     private String cep;
     private String bairro;
     private String complemento;

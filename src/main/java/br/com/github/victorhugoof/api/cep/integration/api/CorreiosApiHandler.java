@@ -1,11 +1,11 @@
 package br.com.github.victorhugoof.api.cep.integration.api;
 
 import br.com.github.victorhugoof.api.cep.enums.Estado;
+import br.com.github.victorhugoof.api.cep.enums.OrigemCep;
+import static br.com.github.victorhugoof.api.cep.helper.CepUtils.*;
 import br.com.github.victorhugoof.api.cep.integration.CepApi;
 import br.com.github.victorhugoof.api.cep.integration.CepApiHandler;
 import br.com.github.victorhugoof.api.cep.integration.CidadeApi;
-import br.com.github.victorhugoof.api.cep.enums.OrigemCep;
-import static br.com.github.victorhugoof.api.cep.helper.CepUtils.*;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
@@ -113,6 +113,7 @@ public class CorreiosApiHandler implements CepApiHandler {
     @XmlRootElement(name = "consultaCEPResponse", namespace = "http://cliente.bean.master.sigep.bsb.correios.com.br/")
     @XmlAccessorType(XmlAccessType.FIELD)
     private static class ConsultaCepResponse {
+
         @XmlElement(name = "return")
         private CorreiosCepApiModel cep;
     }
@@ -120,6 +121,7 @@ public class CorreiosApiHandler implements CepApiHandler {
     @Data
     @XmlAccessorType(XmlAccessType.FIELD)
     private static class CorreiosCepApiModel {
+
         private String cep;
         private String uf;
         private String bairro;

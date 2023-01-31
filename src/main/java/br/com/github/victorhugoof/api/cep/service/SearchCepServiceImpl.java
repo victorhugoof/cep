@@ -24,6 +24,7 @@ import java.time.ZonedDateTime;
 @Component
 @RequiredArgsConstructor
 public class SearchCepServiceImpl implements SearchCepService {
+
     private final CepService cepService;
     private final CepErrorService cepErrorService;
     private final CidadeService cidadeService;
@@ -44,14 +45,14 @@ public class SearchCepServiceImpl implements SearchCepService {
         }
 
         return cepService.findByCep(input.cep())
-                .switchIfEmpty(searchAndPersist(input.cep(), input.force()))
+                .switchIfEmpty(Mono.defer(() -> searchAndPersist(input.cep(), input.force())))
                 .flatMap(this::toCepCompleto);
     }
 
     @Override
     public Mono<CepCompleto> searchGeo(SearchGeoInput input) {
         return cepService.findFirstByGeo(input.longitude(), input.latitude(), 5000)
-                .switchIfEmpty(searchByGeoAndPersist(input.longitude(), input.latitude()))
+                .switchIfEmpty(Mono.defer(() -> searchByGeoAndPersist(input.longitude(), input.latitude())))
                 .flatMap(this::toCepCompleto);
     }
 
@@ -73,7 +74,7 @@ public class SearchCepServiceImpl implements SearchCepService {
     private Mono<Cep> search(String cep) {
         return apiCepService.findCepApi(parseCep(cep))
                 .flatMap(this::persist)
-                .switchIfEmpty(salvaConsultaErro(cep));
+                .switchIfEmpty(Mono.defer(() -> salvaConsultaErro(cep)));
     }
 
     private Mono<Cep> persist(CepApi cepApi) {
@@ -105,20 +106,20 @@ public class SearchCepServiceImpl implements SearchCepService {
     private Mono<Cidade> searchCidade(CidadeApi cidade) {
         if (isNull(cidade.getIbge())) {
             return cidadeService.findByNomeUf(cidade.getNome(), cidade.getEstado())
-                    .switchIfEmpty(
+                    .switchIfEmpty(Mono.defer(() ->
                             apiCepService.findCidadeApi(cidade.getNome(), cidade.getEstado())
                                     .map(this::toCidadeDto)
                                     .flatMap(cidadeService::saveIfNotExists)
-                    )
+                    ))
                     .switchIfEmpty(Mono.error(new IllegalArgumentException("Não foi possível encontrar a cidade %s".formatted(cidade.getNome()))));
         }
 
         return cidadeService.findByIbge(cidade.getIbge())
-                .switchIfEmpty(
+                .switchIfEmpty(Mono.defer(() ->
                         apiCepService.findCidadeApi(cidade.getIbge())
                                 .map(this::toCidadeDto)
                                 .flatMap(cidadeService::saveIfNotExists)
-                )
+                ))
                 .switchIfEmpty(Mono.error(new IllegalArgumentException("Não foi possível encontrar a cidade %s".formatted(cidade.getIbge()))));
 
     }

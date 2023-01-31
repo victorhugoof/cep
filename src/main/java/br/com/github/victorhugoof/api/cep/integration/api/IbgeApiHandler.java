@@ -1,8 +1,8 @@
 package br.com.github.victorhugoof.api.cep.integration.api;
 
-import br.com.github.victorhugoof.api.cep.integration.CidadeApiHandler;
 import br.com.github.victorhugoof.api.cep.enums.Estado;
 import br.com.github.victorhugoof.api.cep.integration.CidadeApi;
+import br.com.github.victorhugoof.api.cep.integration.CidadeApiHandler;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -45,7 +45,7 @@ public class IbgeApiHandler implements CidadeApiHandler {
     public Mono<CidadeApi> findCidadeApi(String nome, Estado estado) {
         log.info("Buscando no IBGE");
         return findCidade(nome, estado)
-                .switchIfEmpty(findCidadeSecundario(nome, estado))
+                .switchIfEmpty(Mono.defer(() -> findCidadeSecundario(nome, estado)))
                 .map(this::toCidadeApi);
     }
 

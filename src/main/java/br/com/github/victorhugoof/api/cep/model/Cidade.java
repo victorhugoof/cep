@@ -7,6 +7,7 @@ import lombok.Data;
 @Data
 @Builder
 public class Cidade {
+
     private Integer ibge;
     private String nome;
     private Estado estado;

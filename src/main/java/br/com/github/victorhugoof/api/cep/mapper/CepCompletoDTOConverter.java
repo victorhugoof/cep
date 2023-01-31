@@ -1,8 +1,8 @@
 package br.com.github.victorhugoof.api.cep.mapper;
 
-import br.com.github.victorhugoof.api.cep.model.Cidade;
 import br.com.github.victorhugoof.api.cep.model.Cep;
 import br.com.github.victorhugoof.api.cep.model.CepCompleto;
+import br.com.github.victorhugoof.api.cep.model.Cidade;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 

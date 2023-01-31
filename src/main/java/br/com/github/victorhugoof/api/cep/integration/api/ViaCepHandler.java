@@ -1,10 +1,10 @@
 package br.com.github.victorhugoof.api.cep.integration.api;
 
-import br.com.github.victorhugoof.api.cep.integration.CepApi;
-import br.com.github.victorhugoof.api.cep.integration.CepApiHandler;
 import br.com.github.victorhugoof.api.cep.enums.Estado;
 import br.com.github.victorhugoof.api.cep.enums.OrigemCep;
 import static br.com.github.victorhugoof.api.cep.helper.CepUtils.*;
+import br.com.github.victorhugoof.api.cep.integration.CepApi;
+import br.com.github.victorhugoof.api.cep.integration.CepApiHandler;
 import br.com.github.victorhugoof.api.cep.integration.CidadeApi;
 import static java.util.Objects.*;
 import lombok.Getter;
@@ -19,6 +19,7 @@ import reactor.core.publisher.Mono;
 @Slf4j
 @Component
 public class ViaCepHandler implements CepApiHandler {
+
     private static final String API_URL = "https://viaCep.com.br/ws/%s/json";
     private final WebClient webClient;
 
@@ -36,7 +37,7 @@ public class ViaCepHandler implements CepApiHandler {
 
     @Override
     public Mono<CepApi> findCepApi(Integer numCep) {
-		log.info("Buscando no ViaCep");
+        log.info("Buscando no ViaCep");
         return webClient.get()
                 .uri(API_URL.formatted(parseCep(numCep)))
                 .accept(MediaType.APPLICATION_JSON)

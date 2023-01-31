@@ -1,11 +1,11 @@
 package br.com.github.victorhugoof.api.cep.integration.api;
 
 import br.com.github.victorhugoof.api.cep.enums.Estado;
+import br.com.github.victorhugoof.api.cep.enums.OrigemCep;
+import static br.com.github.victorhugoof.api.cep.helper.CepUtils.*;
 import br.com.github.victorhugoof.api.cep.integration.CepApi;
 import br.com.github.victorhugoof.api.cep.integration.CepApiHandler;
 import br.com.github.victorhugoof.api.cep.integration.CidadeApi;
-import br.com.github.victorhugoof.api.cep.enums.OrigemCep;
-import static br.com.github.victorhugoof.api.cep.helper.CepUtils.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -43,7 +43,7 @@ public class CorreiosWebHandler implements CepApiHandler {
     public Mono<CepApi> findCepApi(Integer numCep) {
         log.info("Buscando no CorreiosWeb");
         return findCep(numCep)
-                .switchIfEmpty(findCepSecundario(numCep))
+                .switchIfEmpty(Mono.defer(() -> findCepSecundario(numCep)))
                 .map(this::toCepApi);
     }
 

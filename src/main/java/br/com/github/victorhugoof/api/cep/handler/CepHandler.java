@@ -1,8 +1,8 @@
 package br.com.github.victorhugoof.api.cep.handler;
 
+import br.com.github.victorhugoof.api.cep.model.SearchCepInput;
 import br.com.github.victorhugoof.api.cep.model.SearchGeoInput;
 import br.com.github.victorhugoof.api.cep.service.SearchCepService;
-import br.com.github.victorhugoof.api.cep.model.SearchCepInput;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -13,8 +13,6 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
-
-import java.math.BigDecimal;
 
 @Slf4j
 @Component

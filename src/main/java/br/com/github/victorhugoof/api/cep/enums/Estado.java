@@ -41,10 +41,6 @@ public enum Estado {
     private final Integer ibge;
     private final String nome;
 
-    public String getUf() {
-        return name();
-    }
-
     public static Estado find(String nomeOrUf) {
         var term = stripAccents(firstNonNull(nomeOrUf, "").trim().toUpperCase());
 
@@ -60,5 +56,9 @@ public enum Estado {
         }
 
         throw new IllegalArgumentException("No enum constant for %s".formatted(nomeOrUf));
+    }
+
+    public String getUf() {
+        return name();
     }
 }

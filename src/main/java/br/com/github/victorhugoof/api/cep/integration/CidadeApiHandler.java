@@ -5,11 +5,11 @@ import reactor.core.publisher.Mono;
 
 public interface CidadeApiHandler {
 
-	boolean isHabilitado();
+    boolean isHabilitado();
 
-	Integer getOrdem();
+    Integer getOrdem();
 
-	Mono<CidadeApi> findCidadeApi(Integer ibge);
+    Mono<CidadeApi> findCidadeApi(Integer ibge);
 
-	Mono<CidadeApi> findCidadeApi(String nome, Estado estado);
+    Mono<CidadeApi> findCidadeApi(String nome, Estado estado);
 }

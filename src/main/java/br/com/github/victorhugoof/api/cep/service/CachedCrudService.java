@@ -1,7 +1,6 @@
 package br.com.github.victorhugoof.api.cep.service;
 
 import br.com.github.victorhugoof.api.cep.domain.BaseEntity;
-import static java.util.Objects.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.r2dbc.repository.R2dbcRepository;
 import reactor.core.publisher.Mono;
@@ -38,15 +37,15 @@ abstract class CachedCrudService<T extends BaseEntity<I>, I> {
         return findById(entity)
                 .flatMap(existent -> {
                     entity.setUpdatedAt(LocalDateTime.now());
-                    entity.setCreatedAt(nonNull(existent) ? existent.getCreatedAt() : LocalDateTime.now());
-
-                    if (nonNull(existent)) {
-                        entity.hasNotNew();
-                    } else {
-                        entity.hasNew();
-                    }
+                    entity.hasNotNew();
                     return repository.save(entity);
                 })
+                .switchIfEmpty(Mono.defer(() -> {
+                    entity.setUpdatedAt(LocalDateTime.now());
+                    entity.setCreatedAt(LocalDateTime.now());
+                    entity.hasNew();
+                    return repository.save(entity);
+                }))
                 .map(saved -> {
                     cache.put(saved.getId(), saved);
                     return saved;

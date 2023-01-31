@@ -1,12 +1,11 @@
 package br.com.github.victorhugoof.api.cep.integration.api;
 
 import br.com.github.victorhugoof.api.cep.enums.Estado;
-import br.com.github.victorhugoof.api.cep.helper.CepUtils;
+import br.com.github.victorhugoof.api.cep.enums.OrigemCep;
 import static br.com.github.victorhugoof.api.cep.helper.CepUtils.*;
 import br.com.github.victorhugoof.api.cep.integration.CepApi;
 import br.com.github.victorhugoof.api.cep.integration.CepApiHandler;
 import br.com.github.victorhugoof.api.cep.integration.CidadeApi;
-import br.com.github.victorhugoof.api.cep.enums.OrigemCep;
 import static java.util.Objects.*;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -42,7 +41,7 @@ public class OpenStreetHandler implements CepApiHandler {
     public Mono<CepApi> findCepApi(Integer numCep) {
         log.info("Buscando no OpenStreet");
         return doExecuteFind(parseCep(numCep))
-                .switchIfEmpty(doExecuteFind(parseCepFormat(numCep)))
+                .switchIfEmpty(Mono.defer(() -> doExecuteFind(parseCepFormat(numCep))))
                 .mapNotNull(this::toCepApi);
     }
 

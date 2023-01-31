@@ -1,9 +1,9 @@
 package br.com.github.victorhugoof.api.cep.service;
 
-import br.com.github.victorhugoof.api.cep.mapper.CepDTOConverter;
-import br.com.github.victorhugoof.api.cep.repository.CepRepository;
 import br.com.github.victorhugoof.api.cep.domain.CepEntity;
+import br.com.github.victorhugoof.api.cep.mapper.CepDTOConverter;
 import br.com.github.victorhugoof.api.cep.model.Cep;
+import br.com.github.victorhugoof.api.cep.repository.CepRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 @Slf4j
 @Component
 public class CepServiceImpl extends CachedCrudService<CepEntity, Integer> implements CepService {
+
     private final CepRepository cepRepository;
     private final CepDTOConverter cepDTOConverter;
 

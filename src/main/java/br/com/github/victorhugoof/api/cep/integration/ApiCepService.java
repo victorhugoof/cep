@@ -6,6 +6,7 @@ import reactor.core.publisher.Mono;
 import java.math.BigDecimal;
 
 public interface ApiCepService {
+
     Mono<CepApi> findCepApi(Integer numCep);
 
     Mono<CepApi> findCepApi(BigDecimal longitude, BigDecimal latitude);

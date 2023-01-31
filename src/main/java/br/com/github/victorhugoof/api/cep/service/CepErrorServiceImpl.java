@@ -15,9 +15,9 @@ import java.time.ZonedDateTime;
 @Component
 public class CepErrorServiceImpl extends CachedCrudService<CepErrorEntity, Integer> implements CepErrorService {
 
+    private final CepErrorDTOConverter cepErrorDTOConverter;
     @Value("${cep.expiracao-cep-error-dias:#{30}}")
     private Integer expiracaoCepErrorDias;
-    private final CepErrorDTOConverter cepErrorDTOConverter;
 
     public CepErrorServiceImpl(CepErrorRepository repository, CepErrorDTOConverter cepErrorDTOConverter) {
         super(repository);
