@@ -2,17 +2,17 @@ package br.com.github.victorhugoof.api.cep.service;
 
 import br.com.github.victorhugoof.api.cep.domain.BaseEntity;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.r2dbc.repository.R2dbcRepository;
+import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import reactor.core.publisher.Mono;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
 @RequiredArgsConstructor
 abstract class CachedCrudService<T extends BaseEntity<I>, I> {
 
-    private final R2dbcRepository<T, I> repository;
+    private final ReactiveMongoRepository<T, I> repository;
     private final Map<I, T> cache = new HashMap<>();
 
     Mono<Boolean> existsById(T entity) {
@@ -36,15 +36,15 @@ abstract class CachedCrudService<T extends BaseEntity<I>, I> {
     Mono<T> save(T entity) {
         return findById(entity)
                 .flatMap(existent -> {
-                    entity.setUpdatedAt(LocalDateTime.now());
+                    entity.setUpdatedAt(ZonedDateTime.now());
                     entity.setCreatedAt(existent.getCreatedAt());
-                    entity.hasNotNew();
+                    entity.asNotNew();
                     return repository.save(entity);
                 })
                 .switchIfEmpty(Mono.defer(() -> {
-                    entity.setUpdatedAt(LocalDateTime.now());
-                    entity.setCreatedAt(LocalDateTime.now());
-                    entity.hasNew();
+                    entity.setUpdatedAt(ZonedDateTime.now());
+                    entity.setCreatedAt(ZonedDateTime.now());
+                    entity.asNew();
                     return repository.save(entity);
                 }))
                 .map(saved -> {

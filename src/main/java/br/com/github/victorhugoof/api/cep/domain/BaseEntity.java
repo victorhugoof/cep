@@ -4,12 +4,14 @@ import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.domain.Persistable;
-import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 @Data
 public abstract class BaseEntity<T> implements Persistable<T>, Serializable {
@@ -20,18 +22,20 @@ public abstract class BaseEntity<T> implements Persistable<T>, Serializable {
     private boolean insert;
 
     @Getter
-    @Column("created_at")
-    private LocalDateTime createdAt;
+    @CreatedDate
+    @Field(name = "created_at")
+    private ZonedDateTime createdAt;
 
     @Getter
-    @Column("updated_at")
-    private LocalDateTime updatedAt;
+    @LastModifiedDate
+    @Field(name = "updated_at")
+    private ZonedDateTime updatedAt;
 
-    public void hasNew() {
+    public void asNew() {
         this.insert = true;
     }
 
-    public void hasNotNew() {
+    public void asNotNew() {
         this.insert = false;
     }
 

@@ -1,10 +1,14 @@
 package br.com.github.victorhugoof.api.cep.service;
 
 import br.com.github.victorhugoof.api.cep.domain.CepEntity;
+import br.com.github.victorhugoof.api.cep.helper.PointConverter;
 import br.com.github.victorhugoof.api.cep.mapper.CepDTOConverter;
 import br.com.github.victorhugoof.api.cep.model.Cep;
 import br.com.github.victorhugoof.api.cep.repository.CepRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.geo.Distance;
+import org.springframework.data.geo.GeoResult;
+import org.springframework.data.geo.Metrics;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -39,7 +43,9 @@ public class CepServiceImpl extends CachedCrudService<CepEntity, Integer> implem
 
     @Override
     public Mono<Cep> findFirstByGeo(BigDecimal longitude, BigDecimal latitude, Integer precisaoMetros) {
-        return cepRepository.findFirstByGeo(longitude, latitude, precisaoMetros)
+        var point = new PointConverter(longitude, latitude).getPoint();
+        return cepRepository.findFirstByPointNear(point, new Distance(precisaoMetros / 1000.0, Metrics.KILOMETERS))
+                .map(GeoResult::getContent)
                 .flatMap(cepDTOConverter::toDto);
     }
 }

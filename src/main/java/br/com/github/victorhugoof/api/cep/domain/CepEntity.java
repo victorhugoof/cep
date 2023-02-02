@@ -3,45 +3,51 @@ package br.com.github.victorhugoof.api.cep.domain;
 import br.com.github.victorhugoof.api.cep.enums.OrigemCep;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Column;
-import org.springframework.data.relational.core.mapping.Table;
+import org.springframework.data.geo.Point;
+import org.springframework.data.mongodb.core.index.GeoSpatialIndexType;
+import org.springframework.data.mongodb.core.index.GeoSpatialIndexed;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
-import java.math.BigDecimal;
-
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "cep")
+@ToString(callSuper = true)
+@EqualsAndHashCode(of = {"cep"}, callSuper = false)
+@Document(collection = "cep")
 public class CepEntity extends BaseEntity<Integer> {
 
     @Id
     private Integer cep;
 
-    @Column
+    @Field
     private String bairro;
 
-    @Column
+    @Field
     private String complemento;
 
-    @Column
+    @Field
     private String logradouro;
 
-    @Column
-    private BigDecimal latitude;
+    @Field
+    @GeoSpatialIndexed(type = GeoSpatialIndexType.GEO_2DSPHERE)
+    private Point point;
 
-    @Column
-    private BigDecimal longitude;
-
-    @Column("cidade_ibge")
+    @Field("cidade_ibge")
     private Integer cidadeIbge;
 
-    @Column
+    @Field
     private OrigemCep origem;
 
+    @Field
     @Override
     public Integer getId() {
         return getCep();

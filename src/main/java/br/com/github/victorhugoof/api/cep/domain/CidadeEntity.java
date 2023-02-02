@@ -3,28 +3,33 @@ package br.com.github.victorhugoof.api.cep.domain;
 import br.com.github.victorhugoof.api.cep.enums.Estado;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Column;
-import org.springframework.data.relational.core.mapping.Table;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
-@Data
+@Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "cidade")
+@ToString(callSuper = true)
+@EqualsAndHashCode(of = {"ibge"}, callSuper = false)
+@Document(collection = "cidade")
 public class CidadeEntity extends BaseEntity<Integer> {
 
     @Id
     private Integer ibge;
 
-    @Column
+    @Field
     private String nome;
 
-    @Column
+    @Field
     private Estado estado;
 
+    @Field
     @Override
     public Integer getId() {
         return getIbge();
