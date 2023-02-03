@@ -26,6 +26,8 @@ spring:
       auto-index-creation: true
       repositories:
         enabled: true
+mongock:
+  change-logs-scan-package: br.com.github.victorhugoof.api.cep.migration
 logging:
   file:
     name: logs/@project.name@.log

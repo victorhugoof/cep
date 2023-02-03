@@ -37,15 +37,9 @@ public class CepDTOConverter {
                 .point(new PointConverter(cep.getLongitude(), cep.getLatitude()).getPoint())
                 .cidadeIbge(cep.getCidadeIbge())
                 .origem(cep.getOrigem())
+                .createdAt(cep.getCreatedAt())
+                .updatedAt(cep.getUpdatedAt())
                 .build();
-
-        if (nonNull(cep.getCreatedAt())) {
-            entity.setCreatedAt(cep.getCreatedAt());
-        }
-
-        if (nonNull(cep.getUpdatedAt())) {
-            entity.setUpdatedAt(cep.getUpdatedAt());
-        }
         return Mono.just(entity);
     }
 }

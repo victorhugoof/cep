@@ -18,6 +18,7 @@
         <docker-maven-plugin.version>0.40.2</docker-maven-plugin.version>
         <docker.image.prefix>convcard</docker.image.prefix>
     </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
