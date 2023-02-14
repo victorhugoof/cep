@@ -1,11 +1,11 @@
 package br.com.github.victorhugoof.api.cep.migration;
 
-import reactor.core.publisher.Mono;
+import reactor.core.CorePublisher;
 
 public interface BaseMigration {
     String SEPARATOR = "__";
 
-    Mono<Object> run();
+    CorePublisher<?> run();
 
     default String getName() {
         return getClass().getSimpleName();

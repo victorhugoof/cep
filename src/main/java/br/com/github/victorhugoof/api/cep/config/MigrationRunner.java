@@ -12,6 +12,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.ParallelFlux;
 
 import java.time.ZonedDateTime;
 import java.util.Comparator;
@@ -45,10 +46,28 @@ public class MigrationRunner implements ApplicationListener<ApplicationReadyEven
                 .switchIfEmpty(Mono.defer(() -> executeMigration(migration)));
     }
 
+    @SuppressWarnings("unchecked")
     private Mono<MigrationHistoryEntity> executeMigration(BaseMigration migration) {
         var start = ZonedDateTime.now();
         log.info("Starting run of migration {}, version={}, description={}", migration.getName(), migration.getVersion(), migration.getDescription());
-        return migration.run()
+        var publisher = migration.run();
+        if (publisher instanceof Mono) {
+            return triggerMono((Mono<Object>) publisher, migration, start);
+        }
+
+        if (publisher instanceof Flux) {
+            return triggerMono(((Flux<Object>) publisher).then(), migration, start);
+        }
+
+        if (publisher instanceof ParallelFlux) {
+            return triggerMono(((ParallelFlux<Object>) publisher).then(), migration, start);
+        }
+        throw new RuntimeException("Publisher of instance " + publisher.getClass() + " is not supported!");
+    }
+
+    private Mono<MigrationHistoryEntity> triggerMono(Mono<?> publisher, BaseMigration migration, ZonedDateTime start) {
+        return publisher
+                .map(it -> true)
                 .switchIfEmpty(Mono.just(true))
                 .flatMap((res) -> saveHistory(migration, start, null, res))
                 .onErrorResume(e -> saveHistory(migration, start, e, null).flatMap(his -> Mono.error(e)));

@@ -24,10 +24,6 @@ spring:
     mongodb:
       uuid-representation: standard
       auto-index-creation: true
-      repositories:
-        enabled: true
-mongock:
-  change-logs-scan-package: br.com.github.victorhugoof.api.cep.migration
 logging:
   file:
     name: logs/@project.name@.log
@@ -85,8 +81,7 @@ spring:
 
 logging:
   level:
-    org.springframework: DEBUG
-    db.migration: DEBUG
+#    org.springframework: DEBUG
     br.com.github.victorhugoof: DEBUG
 debug: true
 

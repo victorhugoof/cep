@@ -38,10 +38,8 @@ public class CidadeServiceImpl extends CachedCrudService<CidadeEntity, Integer> 
     @Override
     public Mono<Cidade> saveIfNotExists(Cidade cidade) {
         return findByIbge(cidade.getIbge())
-                .switchIfEmpty(Mono.defer(() ->
-                        cidadeDTOConverter.toEntity(cidade)
-                                .flatMap(this::save)
-                                .flatMap(cidadeDTOConverter::toDto)
-                ));
+                .switchIfEmpty(Mono.defer(() -> cidadeDTOConverter.toEntity(cidade)
+                        .flatMap(this::save)
+                        .flatMap(cidadeDTOConverter::toDto)));
     }
 }

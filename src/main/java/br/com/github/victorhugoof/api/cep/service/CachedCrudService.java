@@ -1,7 +1,9 @@
 package br.com.github.victorhugoof.api.cep.service;
 
 import br.com.github.victorhugoof.api.cep.domain.BaseEntity;
+import static java.util.Optional.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import reactor.core.publisher.Mono;
 
@@ -9,6 +11,7 @@ import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @RequiredArgsConstructor
 abstract class CachedCrudService<T extends BaseEntity<I>, I> {
 
@@ -37,15 +40,17 @@ abstract class CachedCrudService<T extends BaseEntity<I>, I> {
         return findById(entity)
                 .flatMap(existent -> {
                     entity.setUpdatedAt(ZonedDateTime.now());
-                    entity.setCreatedAt(existent.getCreatedAt());
+                    entity.setCreatedAt(ofNullable(existent.getCreatedAt()).orElseGet(ZonedDateTime::now));
                     entity.asNotNew();
-                    return repository.save(entity);
+                    return repository.save(entity)
+                            .doOnSubscribe((it) -> log.info("Updating {}", entity.getId()));
                 })
                 .switchIfEmpty(Mono.defer(() -> {
                     entity.setUpdatedAt(ZonedDateTime.now());
                     entity.setCreatedAt(ZonedDateTime.now());
                     entity.asNew();
-                    return repository.save(entity);
+                    return repository.save(entity)
+                            .doOnSubscribe((it) -> log.info("Creating {}", entity.getId()));
                 }))
                 .map(saved -> {
                     cache.put(saved.getId(), saved);
