@@ -6,6 +6,7 @@ import br.com.github.victorhugoof.api.cep.mapper.CidadeDTOConverter;
 import br.com.github.victorhugoof.api.cep.model.Cidade;
 import br.com.github.victorhugoof.api.cep.repository.CidadeRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -41,5 +42,10 @@ public class CidadeServiceImpl extends CachedCrudService<CidadeEntity, Integer> 
                 .switchIfEmpty(Mono.defer(() -> cidadeDTOConverter.toEntity(cidade)
                         .flatMap(this::save)
                         .flatMap(cidadeDTOConverter::toDto)));
+    }
+
+    @Override
+    protected Logger log() {
+        return log;
     }
 }

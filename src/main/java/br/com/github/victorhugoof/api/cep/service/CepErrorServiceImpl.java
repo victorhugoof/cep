@@ -5,6 +5,7 @@ import br.com.github.victorhugoof.api.cep.mapper.CepErrorDTOConverter;
 import br.com.github.victorhugoof.api.cep.model.CepError;
 import br.com.github.victorhugoof.api.cep.repository.CepErrorRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -45,5 +46,10 @@ public class CepErrorServiceImpl extends CachedCrudService<CepErrorEntity, Integ
         return cepErrorDTOConverter.toEntity(CepError.builder().cep(cep).build())
                 .flatMap(this::findById)
                 .flatMap(cepErrorDTOConverter::toDto);
+    }
+
+    @Override
+    protected Logger log() {
+        return log;
     }
 }

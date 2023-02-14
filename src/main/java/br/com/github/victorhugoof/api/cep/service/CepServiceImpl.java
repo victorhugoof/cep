@@ -6,6 +6,7 @@ import br.com.github.victorhugoof.api.cep.mapper.CepDTOConverter;
 import br.com.github.victorhugoof.api.cep.model.Cep;
 import br.com.github.victorhugoof.api.cep.repository.CepRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.springframework.data.geo.Distance;
 import org.springframework.data.geo.GeoResult;
 import org.springframework.data.geo.Metrics;
@@ -47,5 +48,10 @@ public class CepServiceImpl extends CachedCrudService<CepEntity, Integer> implem
         return cepRepository.findFirstByPointNear(point, new Distance(precisaoMetros / 1000.0, Metrics.KILOMETERS))
                 .map(GeoResult::getContent)
                 .flatMap(cepDTOConverter::toDto);
+    }
+
+    @Override
+    protected Logger log() {
+        return log;
     }
 }
