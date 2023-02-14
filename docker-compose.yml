@@ -18,9 +18,6 @@ services:
     environment:
       SERVER_PORT: "8585"
       SPRING_PROFILES_ACTIVE: "qa"
-      SPRING_R2DBC_URL: "r2dbc:postgresql://postgres:5432/cep"
-      SPRING_R2DBC_USERNAME: "postgres"
-      SPRING_R2DBC_PASSWORD: "postgres"
-      SPRING_FLYWAY_URL: "jdbc:postgresql://postgres:5432/cep"
-      SPRING_FLYWAY_USER: "postgres"
-      SPRING_FLYWAY_PASSWORD: "postgres"
+      SPRING_DATA_MONGODB_HOST: "localhost"
+      SPRING_DATA_MONGODB_PORT: "27017"
+      SPRING_DATA_MONGODB_DATABASE: "cep"
